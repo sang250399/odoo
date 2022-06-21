@@ -169,13 +169,12 @@ class BlogPost(models.Model):
         for blog_post in self:
             blog_post.teaser_manual = blog_post.teaser
 
-    @api.depends('create_date', 'published_date')
+    @api.depends('create_date', 'published_date')    
     def _compute_post_date(self):
-        for blog_post in self:
-            if blog_post.published_date:
-                blog_post.post_date = blog_post.published_date
-            else:
-                blog_post.post_date = blog_post.create_date
+        if self.env.user.has_group('website.group_website_designer'):
+            return super(Blog, self)._compute_post_date()
+        for r in self:
+            r.post_date = r.published_date or fields.Datetime.now()
 
     def _set_post_date(self):
         for blog_post in self:
